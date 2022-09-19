@@ -20,7 +20,7 @@ const USER_AGENTS = {
   BCH: "/Bitcoin/",
   XEC: "/Bitcoin/",
   "BSV-STN": "/Bitcoin SV:0.2.2(EB10000.0)/",
-};
+} as const;
 
 const MAX_PER_MSG = 50000;
 

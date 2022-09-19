@@ -1,9 +1,9 @@
-const {
-  utils: { BufferReader, BufferWriter },
-} = require("bsv-minimal");
-const crypto = require("crypto");
-const Address = require("./address");
-const { VERSIONS, USER_AGENTS } = require("../config");
+import { utils } from "bsv-minimal";
+import crypto from "crypto";
+import Address from "./address";
+import { VERSIONS, USER_AGENTS } from "../config";
+
+const { BufferReader, BufferWriter } = utils;
 
 const VERSION_OBJ = {
   // version: 70001,
@@ -30,10 +30,11 @@ const VERSION_OBJ = {
   relay: Buffer.from([1]),
 };
 
-function read(payload) {
-  let br = payload;
+// TODO: `payload` should be Buffer or string or BufferReader
+function read(payload: Buffer | string) {
+  let br = payload as any;
   if (Buffer.isBuffer(br)) br = new BufferReader(br);
-  const o = {};
+  const o: Record<any, any> = {};
   o.version = br.readUInt32LE();
   // o.services = br.readUInt64LE()
   o.services = br.readReverse(8);
@@ -48,7 +49,13 @@ function read(payload) {
   return o;
 }
 
-function write({ ticker, options }) {
+function write({
+  ticker,
+  options,
+}: {
+  ticker: keyof typeof USER_AGENTS;
+  options: any;
+}) {
   options = {
     user_agent: USER_AGENTS[ticker],
     timestamp: Math.round(+new Date() / 1000),
@@ -87,7 +94,4 @@ function write({ ticker, options }) {
   return bw.toBuffer();
 }
 
-module.exports = {
-  read,
-  write,
-};
+export default { read, write };

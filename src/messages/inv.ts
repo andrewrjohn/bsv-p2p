@@ -45,4 +45,4 @@ function write({ transactions }: { transactions: any[] }) {
   return bw.toBuffer();
 }
 
-export { read, write };
+export default { read, write };

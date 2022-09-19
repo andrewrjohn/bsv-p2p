@@ -1,10 +1,10 @@
-const {
-  utils: { BufferReader },
-} = require("bsv-minimal");
+import { utils } from "bsv-minimal";
 
-function read(payload) {
+const { BufferReader } = utils;
+
+function read(payload: Buffer | string) {
   const br = new BufferReader(payload);
-  const o = {};
+  const o: Record<any, any> = {};
   o.message = br.readVarintNum().toString();
   o.ccode = br.readUInt8();
   o.reason = br.readVarintNum().toString();

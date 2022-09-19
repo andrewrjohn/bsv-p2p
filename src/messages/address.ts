@@ -1,13 +1,17 @@
-const {
-  utils: { BufferReader, BufferWriter },
-} = require("bsv-minimal");
+import { utils } from "bsv-minimal";
+
+const { BufferReader, BufferWriter } = utils;
 
 const IPV4_BUF = Buffer.from("00000000000000000000FFFF", "hex");
 
-function read(payload, { time, ipv4 }) {
-  let br = payload;
+// TODO: `payload` should be Buffer or BufferReader
+function read(
+  payload: Buffer,
+  { time, ipv4 }: { time?: boolean; ipv4?: boolean }
+) {
+  let br = payload as any;
   if (Buffer.isBuffer(br)) br = new BufferReader(br);
-  const o = {};
+  const o: Record<any, any> = {};
   if (time) o.time = br.readUInt32LE();
   // o.services = br.readUInt64LEBN()
   o.services = br.readReverse(8);
@@ -20,7 +24,8 @@ function read(payload, { time, ipv4 }) {
   return o;
 }
 
-function readAddr(payload) {
+// TODO: `payload` should be Buffer or string or BufferReader
+function readAddr(payload: Buffer | string) {
   const br = new BufferReader(payload);
   const count = br.readVarintNum();
   const addrs = [];
@@ -31,7 +36,15 @@ function readAddr(payload) {
   return addrs;
 }
 
-function write({ time, services, ip, port, bw }) {
+interface WriteOptions {
+  ip: string;
+  port: number;
+  services: any;
+  time?: boolean;
+  // TODO: This should be of type `BufferWriter`
+  bw?: any;
+}
+function write({ time, services, ip, port, bw }: WriteOptions) {
   if (!bw) bw = new BufferWriter();
   if (time) bw.writeUInt32LE(time);
   // bw.writeUInt64LEBN(services)
@@ -41,7 +54,7 @@ function write({ time, services, ip, port, bw }) {
   return bw.toBuffer();
 }
 
-module.exports = {
+export default {
   read,
   readAddr,
   write,

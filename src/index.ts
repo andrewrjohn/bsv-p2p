@@ -27,7 +27,7 @@ interface Options {
 export default class Peer extends EventEmitter {
   listenBlocks = false;
   connected = false;
-  listenTxs = false;
+  listenTxs: boolean | ((txs: any) => Promise<any>) = false;
   extmsg = false;
   disconnects = 0;
   timeoutConnect = 1000 * 30; // 30 seconds
@@ -45,8 +45,8 @@ export default class Peer extends EventEmitter {
   buffers;
   connectOptions?: object;
   socket?: Net.Socket | null;
-  promiseConnect;
-  promiseGetHeaders;
+  promiseConnect?: Promise<void>;
+  promiseGetHeaders?: Promise<void>;
 
   constructor({
     node,
@@ -163,7 +163,7 @@ export default class Peer extends EventEmitter {
     }
   }
 
-  async readMessage(buffer: Buffer) {
+  async readMessage(buffer: Buffer): Promise<void> {
     const {
       node,
       magic,
@@ -274,7 +274,8 @@ export default class Peer extends EventEmitter {
         const notfound = Inv.read(payload);
         this.DEBUG_LOG && console.log("bsv-p2p: notfound", notfound);
         this.emit(`notfound`, notfound);
-        (Object.keys(notfound) as (keyof typeof notfound)[]).map((key) =>
+        const keys = Object.keys(notfound) as (keyof typeof notfound)[];
+        keys.map((key) =>
           this.internalEmitter.emit(
             `notfound_${key}_${notfound[key].toString("hex")}`
           )
@@ -285,7 +286,8 @@ export default class Peer extends EventEmitter {
       } else if (command === "getdata") {
         const msg = GetData.read(payload);
         this.emit(`getdata`, msg);
-        (Object.keys(msg) as (keyof typeof msg)[]).map((key) =>
+        const keys = Object.keys(msg) as (keyof typeof msg)[];
+        keys.map((key) =>
           this.internalEmitter.emit(
             `getdata_${key}_${msg[key].toString("hex")}`
           )
